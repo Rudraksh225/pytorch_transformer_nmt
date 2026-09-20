@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English to Gujarati Translator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Mukta+Vaani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        gujarati: ['Mukta Vaani', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            background-image: 
+                radial-gradient(at 40% 20%, hsla(198,100%,74%,1) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, hsla(189,100%,56%,1) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(198,100%,74%,1) 0px, transparent 50%);
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            background-size: cover;
+            min-height: 100vh;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        }
+
+        .textarea-custom {
+            resize: none;
+            transition: all 0.3s ease;
+        }
+        
+        .textarea-custom:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased flex flex-col min-h-screen relative">
+    
+    <!-- Header -->
+    <header class="w-full py-6 px-4 sm:px-6 lg:px-8 flex justify-center items-center z-10">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white shadow-lg">
+                <i class="fa-solid fa-language text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-800">Neural<span class="text-primary-600">Translate</span></h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 w-full max-w-6xl mx-auto z-10">
+    <main class="flex-grow flex flex-col items-center justify-start px-4 sm:px-6 lg:px-8 py-8 w-full max-w-6xl mx-auto z-10 gap-6">
+        <div class="w-full glass-panel rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row relative">
+            
+            <!-- Left Side: English Input -->
+            <div class="w-full md:w-1/2 p-6 sm:p-8 md:border-r border-slate-200/60 relative group">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-primary-600 flex items-center gap-2">
+                        <span>English</span>
+                    </h2>
+                    <div class="flex space-x-2">
+                        <button onclick="clearText()" class="text-slate-400 hover:text-slate-600 transition-colors p-2 rounded-full hover:bg-slate-100" title="Clear text">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <textarea 
+                    id="sourceText" 
+                    class="textarea-custom w-full h-48 sm:h-64 bg-transparent text-slate-800 text-lg sm:text-xl placeholder-slate-400 border-none" 
+                    placeholder="Enter English text here..."
+                    spellcheck="false"
+                ></textarea>
+
+                <div class="absolute bottom-6 right-6 flex items-center gap-3">
+                    <span id="charCount" class="text-xs text-slate-400 font-medium">0 / 500</span>
+                    <button 
+                        id="translateBtn"
+                        onclick="translateText()" 
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-lg"
+                    >
+                        <span>Translate</span>
+                        <i id="translateIcon" class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        <svg id="loadingSpinner" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Central Icon (visible mainly on desktop) -->
+            <div class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-lg items-center justify-center text-primary-500 border border-slate-100">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+            </div>
+
+            <!-- Mobile Divider -->
+            <div class="md:hidden w-full h-px bg-slate-200/60 relative flex justify-center">
+                <div class="absolute -top-4 w-8 h-8 bg-white rounded-full shadow items-center justify-center flex text-primary-500 border border-slate-100 text-sm">
+                    <i class="fa-solid fa-arrow-down"></i>
+                </div>
+            </div>
+
+            <!-- Right Side: Gujarati Output -->
+            <div class="w-full md:w-1/2 p-6 sm:p-8 bg-slate-50/50">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-emerald-600 flex items-center gap-2">
+                        <span>Gujarati</span>
+                    </h2>
+                    <button onclick="copyToClipboard()" class="text-slate-400 hover:text-emerald-600 transition-colors p-2 rounded-full hover:bg-slate-200/50" title="Copy translation">
+                        <i id="copyIcon" class="fa-regular fa-copy"></i>
+                        <span id="copyFeedback" class="text-xs font-medium ml-1 hidden text-emerald-600">Copied!</span>
+                    </button>
+                </div>
+                
+                <div class="relative w-full h-48 sm:h-64">
+                    <textarea 
+                        id="targetText" 
+                        class="textarea-custom w-full h-full bg-transparent text-slate-800 text-xl sm:text-2xl border-none font-gujarati leading-relaxed" 
+                        placeholder="Translation will appear here..."
+                        readonly
+                    ></textarea>
+                    
+                    <!-- Skeleton Loader -->
+                    <div id="skeletonLoader" class="absolute top-0 left-0 w-full h-full hidden flex-col gap-3 pt-2">
+                        <div class="w-3/4 h-6 bg-slate-200 rounded-md animate-pulse"></div>
+                        <div class="w-full h-6 bg-slate-200 rounded-md animate-pulse animation-delay-150"></div>
+                        <div class="w-5/6 h-6 bg-slate-200 rounded-md animate-pulse animation-delay-300"></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Attention Visualization Section (Hidden by default) -->
+        <div id="attentionSection" class="w-full glass-panel rounded-3xl mt-6 p-6 sm:p-8 shadow-xl hidden flex-col transition-all duration-500 relative">
+            <div class="flex justify-between items-start sm:items-center mb-6">
+                <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-network text-primary-600"></i> Attention Visualization
+                </h2>
+                <button onclick="toggleAttention()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="flex flex-wrap gap-4 mb-6">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase">Attention Type</label>
+                    <select id="attnType" onchange="renderHeatmap()" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                        <option value="encoder_attn">Encoder (Self-Attention)</option>
+                        <option value="decoder_attn">Decoder (Self-Attention)</option>
+                        <option value="cross_attn">Cross-Attention (Encoder-Decoder)</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase">Layer</label>
+                    <select id="attnLayer" onchange="renderHeatmap()" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase">Head</label>
+                    <select id="attnHead" onchange="renderHeatmap()" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500">
+                        <!-- Options generated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-auto bg-white rounded-xl border border-slate-200 p-4 relative" style="max-height: 600px;">
+                <div id="heatmapContainer" class="min-w-max pb-4 pr-4 relative">
+                    <!-- Heatmap grid will be injected here -->
+                </div>
+            </div>
+            
+            <div id="heatmapTooltip" class="fixed hidden bg-slate-800 text-white text-xs px-3 py-2 rounded shadow-lg pointer-events-none z-[100] transform -translate-x-1/2 -translate-y-[calc(100%+12px)]">
+                <div id="tooltipContent" class="flex flex-col gap-1"></div>
+                <div class="absolute bottom-[-4px] left-1/2 transform -translate-x-1/2 w-2 h-2 bg-slate-800 rotate-45"></div>
+            </div>
+        </div>
+        
+        <div id="attentionToggleBtn" class="w-full max-w-6xl mx-auto mt-4 flex justify-end hidden z-10">
+            <button onclick="toggleAttention()" class="text-primary-600 bg-primary-50 hover:bg-primary-100 font-medium py-2 px-4 rounded-xl transition-colors flex items-center gap-2 text-sm shadow-sm border border-primary-100">
+                <i class="fa-solid fa-chart-network"></i> View Attention Maps
+            </button>
+        </div>
+    </main>
+
+    <script>
+        const sourceText = document.getElementById('sourceText');
+        const targetText = document.getElementById('targetText');
+        const translateBtn = document.getElementById('translateBtn');
+        const translateIcon = document.getElementById('translateIcon');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const skeletonLoader = document.getElementById('skeletonLoader');
+        const charCount = document.getElementById('charCount');
+        const MAX_CHARS = 500;
+
+        let visualizationData = null;
+
+        // Character count and auto-resize
+        sourceText.addEventListener('input', function() {
+            const currentLength = this.value.length;
+            charCount.textContent = `${currentLength} / ${MAX_CHARS}`;
+            if (currentLength > MAX_CHARS) {
+                this.value = this.value.substring(0, MAX_CHARS);
+                charCount.textContent = `${MAX_CHARS} / ${MAX_CHARS}`;
+                charCount.classList.add('text-red-500');
+            } else {
+                charCount.classList.remove('text-red-500');
+            }
+        });
+
+        // Translate on Enter (Ctrl+Enter or Cmd+Enter)
+        sourceText.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                translateText();
+            }
+        });
+
+        function clearText() {
+            sourceText.value = '';
+            targetText.value = '';
+            charCount.textContent = `0 / ${MAX_CHARS}`;
+            
+            // Hide attention stuff
+            document.getElementById('attentionToggleBtn').classList.add('hidden');
+            document.getElementById('attentionSection').classList.add('hidden');
+            document.getElementById('attentionSection').classList.remove('flex');
+            visualizationData = null;
+            
+            sourceText.focus();
+        }
+
+        async function copyToClipboard() {
+            if (!targetText.value) return;
+            
+            try {
+                await navigator.clipboard.writeText(targetText.value);
+                const icon = document.getElementById('copyIcon');
+                const feedback = document.getElementById('copyFeedback');
+                
+                icon.className = 'fa-solid fa-check text-emerald-600';
+                feedback.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    icon.className = 'fa-regular fa-copy';
+                    feedback.classList.add('hidden');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        }
+
+        async function translateText() {
+            const text = sourceText.value.trim();
+            if (!text) {
+                sourceText.focus();
+                return;
+            }
+
+            // UI Loading state
+            setLoadingState(true);
+
+            try {
+                // Call the backend API created in app.py
+                const response = await fetch('/api/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Translation failed');
+                }
+
+                const data = await response.json();
+                targetText.value = data.translation;
+                
+                // Save visualization data
+                if (data.visualization) {
+                    visualizationData = data.visualization;
+                    document.getElementById('attentionToggleBtn').classList.remove('hidden');
+                    
+                    // If already open, update it
+                    const section = document.getElementById('attentionSection');
+                    if (!section.classList.contains('hidden')) {
+                        setupDropdowns();
+                        renderHeatmap();
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error during translation:', error);
+                targetText.value = "An error occurred during translation. Please make sure the backend server (app.py) is running.";
+                targetText.classList.add('text-red-500', 'text-base', 'font-sans');
+                setTimeout(() => {
+                    targetText.classList.remove('text-red-500', 'text-base', 'font-sans');
+                    if (targetText.value.startsWith("An error")) targetText.value = "";
+                }, 5000);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function setLoadingState(isLoading) {
+            translateBtn.disabled = isLoading;
+            
+            if (isLoading) {
+                translateIcon.classList.add('hidden');
+                loadingSpinner.classList.remove('hidden');
+                translateBtn.querySelector('span').textContent = 'Translating...';
+                
+                targetText.value = '';
+                targetText.classList.add('hidden');
+                skeletonLoader.classList.remove('hidden');
+                skeletonLoader.classList.add('flex');
+                
+                document.getElementById('attentionToggleBtn').classList.add('hidden');
+                document.getElementById('attentionSection').classList.add('hidden');
+                document.getElementById('attentionSection').classList.remove('flex');
+            } else {
+                translateIcon.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                translateBtn.querySelector('span').textContent = 'Translate';
+                
+                skeletonLoader.classList.remove('flex');
+                skeletonLoader.classList.add('hidden');
+                targetText.classList.remove('hidden');
+            }
+        }
+
+        // --- Attention Visualization Logic ---
+        
+        function toggleAttention() {
+            const section = document.getElementById('attentionSection');
+            if (section.classList.contains('hidden')) {
+                section.classList.remove('hidden');
+                section.classList.add('flex');
+                setupDropdowns();
+                renderHeatmap();
+                // scroll to it
+                setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+            } else {
+                section.classList.add('hidden');
+                section.classList.remove('flex');
+            }
+        }
+        
+        function setupDropdowns() {
+            if (!visualizationData) return;
+            
+            const layerSelect = document.getElementById('attnLayer');
+            const headSelect = document.getElementById('attnHead');
+            
+            // Only populate if empty
+            if (layerSelect.options.length === 0) {
+                for (let i = 0; i < visualizationData.num_layers; i++) {
+                    layerSelect.add(new Option(`Layer ${i}`, i));
+                }
+                for (let i = 0; i < visualizationData.num_heads; i++) {
+                    headSelect.add(new Option(`Head ${i}`, i));
+                }
+            }
+        }
+        
+        function renderHeatmap() {
+            if (!visualizationData) return;
+            
+            const type = document.getElementById('attnType').value;
+            const layer = parseInt(document.getElementById('attnLayer').value);
+            const head = parseInt(document.getElementById('attnHead').value);
+            
+            const container = document.getElementById('heatmapContainer');
+            container.innerHTML = '';
+            
+            const matrix = visualizationData[type][layer][head];
+            
+            let rowTokens, colTokens;
+            if (type === 'encoder_attn') {
+                rowTokens = visualizationData.encoder_tokens;
+                colTokens = visualizationData.encoder_tokens;
+            } else if (type === 'decoder_attn') {
+                rowTokens = visualizationData.decoder_tokens;
+                colTokens = visualizationData.decoder_tokens;
+            } else {
+                rowTokens = visualizationData.decoder_tokens;
+                colTokens = visualizationData.encoder_tokens;
+            }
+            
+            // Limit tokens to the matrix size
+            const rows = Math.min(rowTokens.length, matrix.length);
+            const cols = Math.min(colTokens.length, matrix[0].length);
+            
+            // We use HTML Canvas for performance
+            
+            // Layout constants
+            const cellPad = 2;
+            const cellSize = 24;
+            const labelSpaceY = 100;
+            const labelSpaceX = 100;
+            const width = labelSpaceX + cols * (cellSize + cellPad);
+            const height = labelSpaceY + rows * (cellSize + cellPad);
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            canvas.style.cursor = 'crosshair';
+            const ctx = canvas.getContext('2d');
+            
+            // Draw column labels (rotated)
+            ctx.font = "11px monospace";
+            ctx.fillStyle = "#64748b"; // text-slate-500
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+            
+            for (let c = 0; c < cols; c++) {
+                ctx.save();
+                const x = labelSpaceX + c * (cellSize + cellPad) + cellSize / 2;
+                const y = labelSpaceY - 10;
+                ctx.translate(x, y);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(colTokens[c], 0, 0);
+                ctx.restore();
+            }
+            
+            // Draw row labels and cells
+            ctx.textAlign = "right";
+            
+            for (let r = 0; r < rows; r++) {
+                // Row label
+                const rowY = labelSpaceY + r * (cellSize + cellPad) + cellSize / 2;
+                ctx.fillStyle = "#64748b";
+                ctx.fillText(rowTokens[r], labelSpaceX - 10, rowY);
+                
+                // Cells
+                for (let c = 0; c < cols; c++) {
+                    const val = matrix[r][c];
+                    const alpha = Math.min(Math.max(val, 0), 1);
+                    
+                    const cellX = labelSpaceX + c * (cellSize + cellPad);
+                    const cellY = labelSpaceY + r * (cellSize + cellPad);
+                    
+                    // Draw cell background
+                    ctx.fillStyle = `rgba(14, 165, 233, ${alpha})`;
+                    ctx.fillRect(cellX, cellY, cellSize, cellSize);
+                    
+                    // Add light border if high value
+                    if (alpha > 0.5) {
+                        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+                        ctx.strokeRect(cellX, cellY, cellSize, cellSize);
+                    }
+                }
+            }
+            
+            container.appendChild(canvas);
+            
+            // Tooltip logic for canvas
+            const tooltip = document.getElementById('heatmapTooltip');
+            const tooltipContent = document.getElementById('tooltipContent');
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                if (x < labelSpaceX || y < labelSpaceY) {
+                    tooltip.classList.add('hidden');
+                    return;
+                }
+                
+                const c = Math.floor((x - labelSpaceX) / (cellSize + cellPad));
+                const r = Math.floor((y - labelSpaceY) / (cellSize + cellPad));
+                
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    const val = matrix[r][c];
+                    
+                    // position tooltip relative to viewport exactly at pointer
+                    tooltip.style.left = `${e.clientX}px`;
+                    tooltip.style.top = `${e.clientY}px`;
+                    
+                    tooltipContent.innerHTML = `
+                        <div><span class="text-slate-400">Row:</span> ${rowTokens[r]}</div>
+                        <div><span class="text-slate-400">Col:</span> ${colTokens[c]}</div>
+                        <div><span class="text-slate-400">Val:</span> ${val.toFixed(4)}</div>
+                    `;
+                    tooltip.classList.remove('hidden');
+                } else {
+                    tooltip.classList.add('hidden');
+                }
+            });
+            
+            canvas.addEventListener('mouseleave', () => {
+                tooltip.classList.add('hidden');
+            });
+        }
+    </script>
+</body>
+</html>
+

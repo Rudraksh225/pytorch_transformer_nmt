@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+env/
+venv/
+
+# Deep Learning / Training files
+weights/
+runs/
+*.pt
+*.pth
+
+# Auto-generated Tokenizer files
+tokenizer_*.json
+
+# Temporary/Notes files
+tmp.txt
+*.tmp
